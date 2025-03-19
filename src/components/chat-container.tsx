@@ -7,7 +7,7 @@ import { ChatInput } from '@/components/chat-input';
 import { ChatMessage } from '@/components/chat-message';
 
 export function ChatContainer() {
-  const { messages, clearMessages, isOpen, toggleChat, isExpanded, toggleExpand } = useChatStore();
+  const { messages, isOpen, toggleChat, isExpanded, toggleExpand } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Auto-scroll to bottom of messages

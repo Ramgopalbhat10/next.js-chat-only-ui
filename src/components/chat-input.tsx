@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SendHorizontal, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { CommandChip } from '@/components/command-chip';
 import { CommandSuggestions } from '@/components/command-suggestions';
 import { filterToolsByQuery, useChatStore } from '@/lib/store';

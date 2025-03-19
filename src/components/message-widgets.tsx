@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Widget } from '@/lib/mock-data';
+import { Widget, CardData, ListData, TableData, ActionData } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { 
   ChevronDown, 
@@ -32,6 +32,18 @@ interface Action {
   value: string;
 }
 
+interface CardItem {
+  name?: string;
+  title?: string;
+  description?: string;
+  [key: string]: unknown;
+}
+
+interface ListItem extends CardItem {
+  type?: string;
+  status?: string;
+}
+
 export function MessageWidgets({ widgets }: MessageWidgetsProps) {
   useEffect(() => {
     console.log('MessageWidgets received widgets:', widgets);
@@ -60,22 +72,21 @@ export function MessageWidgets({ widgets }: MessageWidgetsProps) {
 }
 
 function CardWidget({ widget }: { widget: Widget }) {
-  const data = Array.isArray(widget.data) ? widget.data : [widget.data];
-  console.log('CardWidget data:', data);
-
+  const data = widget.data as CardData;
+  
   return (
-    <div className="w-full">
+    <div className="bg-white rounded-lg border border-neutral-200 p-4 shadow-sm">
       {widget.title && (
-        <div className="text-sm font-medium mb-1">{widget.title}</div>
+        <h3 className="text-sm font-medium mb-3">{widget.title}</h3>
       )}
-      {data.map((item, index: number) => (
-        <ExpandableCard key={index} item={item} />
-      ))}
+      <div className="space-y-2">
+        <ExpandableCard key={0} item={data} />
+      </div>
     </div>
   );
 }
 
-function ExpandableCard({ item }: { item: any }) {
+function ExpandableCard({ item }: { item: CardItem }) {
   const [expanded, setExpanded] = useState(false);
 
   // First few fields to always show
@@ -103,7 +114,7 @@ function ExpandableCard({ item }: { item: any }) {
       
       {/* Always visible fields */}
       <div className="p-3 pt-2">
-        {importantFields.map(([key, value], index: number) => (
+        {importantFields.map(([key, value]) => (
           <div key={key} className="flex justify-between py-1 text-xs">
             <span className="text-neutral-500 capitalize">
               {key.replace(/([A-Z])/g, ' $1').trim()}
@@ -118,7 +129,7 @@ function ExpandableCard({ item }: { item: any }) {
         <>
           {expanded && (
             <div className="px-3 pb-3 pt-0 border-t border-neutral-100">
-              {additionalFields.map(([key, value], index: number) => (
+              {additionalFields.map(([key, value]) => (
                 <div key={key} className="flex justify-between py-1 text-xs">
                   <span className="text-neutral-500 capitalize">
                     {key.replace(/([A-Z])/g, ' $1').trim()}
@@ -148,29 +159,23 @@ function ExpandableCard({ item }: { item: any }) {
 }
 
 function ListWidget({ widget }: { widget: Widget }) {
-  const data = Array.isArray(widget.data) ? widget.data : [widget.data];
-  console.log('ListWidget data:', data);
-
+  const data = widget.data as ListData;
+  
   return (
-    <div className="border border-neutral-200 rounded-md bg-white shadow-sm w-full overflow-hidden">
+    <div className="bg-white rounded-lg border border-neutral-200 p-4 shadow-sm">
       {widget.title && (
-        <div className="border-b border-neutral-200 px-3 py-2 flex justify-between items-center">
-          <div className="font-medium text-sm">{widget.title}</div>
-          <div className="text-xs text-neutral-500">{data.length} items</div>
-        </div>
+        <h3 className="text-sm font-medium mb-3">{widget.title}</h3>
       )}
-      <div className="p-0 overflow-x-auto">
-        <ul className="divide-y divide-neutral-100 min-w-[400px]">
-          {data.map((item, index: number) => (
-            <ExpandableListItem key={index} item={item} />
-          ))}
-        </ul>
+      <div className="space-y-2">
+        {data.map((item, index: number) => (
+          <ExpandableListItem key={index} item={item as ListItem} />
+        ))}
       </div>
     </div>
   );
 }
 
-function ExpandableListItem({ item }: { item: any }) {
+function ExpandableListItem({ item }: { item: ListItem }) {
   const [expanded, setExpanded] = useState(false);
 
   // Helper function to get badge color based on status or type
@@ -314,7 +319,7 @@ function ExpandableListItem({ item }: { item: any }) {
       {expanded && (
         <div className="px-3 pb-3 pt-0 bg-neutral-50">
           <div className="border-t border-neutral-200 pt-2">
-            {visibleKeys.map((key, index: number) => (
+            {visibleKeys.map((key) => (
               <div key={key} className="flex justify-between py-1 text-xs">
                 <span className="text-neutral-500 capitalize">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
@@ -345,90 +350,79 @@ function ExpandableListItem({ item }: { item: any }) {
 }
 
 function TableWidget({ widget }: { widget: Widget }) {
-  const data = Array.isArray(widget.data) ? widget.data : [widget.data];
-  console.log('TableWidget data:', data);
+  const data = widget.data as TableData;
+  const headers = data.headers || Object.keys(data.rows[0] || {});
   
-  if (data.length === 0) return null;
+  if (data.rows.length === 0) return null;
   
   // Detect service type from title for specialized rendering
   const isJira = widget.title?.toLowerCase().includes('jira');
   const isGitHub = widget.title?.toLowerCase().includes('github');
   const isSlack = widget.title?.toLowerCase().includes('slack');
-  
+
   // If this is Jira, GitHub, or Slack data, render as list items instead of table
   if (isJira || isGitHub || isSlack) {
     return (
-      <div className="border border-neutral-200 rounded-md bg-white shadow-sm w-full overflow-hidden">
+      <div className="bg-white rounded-lg border border-neutral-200 p-4 shadow-sm">
         {widget.title && (
-          <div className="border-b border-neutral-200 px-3 py-2 flex justify-between items-center">
-            <div className="font-medium text-sm">{widget.title}</div>
-            <div className="text-xs text-neutral-500">{data.length} items</div>
-          </div>
+          <h3 className="text-sm font-medium mb-3">{widget.title}</h3>
         )}
-        <div className="p-0 overflow-x-auto">
-          <ul className="divide-y divide-neutral-100 min-w-[400px]">
-            {data.map((item, index: number) => {
-              // Create a customized item based on the service type
-              let enhancedItem = { ...item };
-              
-              if (isJira) {
-                enhancedItem = {
-                  ...item,
-                  name: item.summary || item.key,
-                  status: item.status,
-                  type: 'Jira Ticket',
-                };
-              } else if (isGitHub) {
-                enhancedItem = {
-                  ...item,
-                  name: item.name,
-                  status: item.lastUpdated ? `Updated ${item.lastUpdated}` : undefined,
-                  type: 'GitHub Repository',
-                };
-              } else if (isSlack) {
-                enhancedItem = {
-                  ...item,
-                  name: item.name,
-                  status: item.lastActive ? `Active ${item.lastActive}` : undefined,
-                  type: 'Slack Channel',
-                };
-              }
-              
-              return <ExpandableListItem key={index} item={enhancedItem} />;
-            })}
-          </ul>
+        <div className="space-y-2">
+          {data.rows.map((item, index: number) => {
+            // Create a customized item based on the service type
+            let enhancedItem: ListItem = { ...item } as ListItem;
+            
+            if (isJira) {
+              enhancedItem = {
+                ...item,
+                name: (item.summary as string) || (item.key as string),
+                status: item.status as string,
+                type: 'Jira Ticket',
+              };
+            } else if (isGitHub) {
+              enhancedItem = {
+                ...item,
+                name: item.name as string,
+                status: item.lastUpdated ? `Updated ${item.lastUpdated as string}` : undefined,
+                type: 'GitHub Repository',
+              };
+            } else if (isSlack) {
+              enhancedItem = {
+                ...item,
+                name: item.name as string,
+                status: item.lastActive ? `Active ${item.lastActive as string}` : undefined,
+                type: 'Slack Channel',
+              };
+            }
+            
+            return <ExpandableListItem key={index} item={enhancedItem} />;
+          })}
         </div>
       </div>
     );
   }
   
   // Default table rendering for other types of data
-  const headers = Object.keys(data[0]);
-
   return (
-    <div className="border border-neutral-200 rounded-md bg-white shadow-sm overflow-hidden w-full">
+    <div className="bg-white rounded-lg border border-neutral-200 p-4 shadow-sm">
       {widget.title && (
-        <div className="border-b border-neutral-200 px-3 py-2">
-          <div className="font-medium text-sm">{widget.title}</div>
-        </div>
+        <h3 className="text-sm font-medium mb-3">{widget.title}</h3>
       )}
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-neutral-200 bg-neutral-50">
-              {headers.map((header, index: number) => (
-                <th key={header} className="px-3 py-2 text-left font-medium text-neutral-500 capitalize">
-                  {header.replace(/([A-Z])/g, ' $1').trim()}
-                </th>
+          <thead className="bg-neutral-50 text-neutral-600">
+            <tr>
+              {headers.map((header) => (
+                <th key={header} className="px-3 py-2 text-left font-medium">{header}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {data.map((row, rowIndex: number) => (
+            {data.rows.map((row, rowIndex: number) => (
               <tr key={rowIndex} className="border-b border-neutral-100 last:border-b-0">
-                {headers.map((header, index: number) => (
+                {headers.map((header) => (
                   <td key={`${rowIndex}-${header}`} className="px-3 py-2">
-                    {row[header]}
+                    {String(row[header] || '')}
                   </td>
                 ))}
               </tr>
@@ -441,8 +435,8 @@ function TableWidget({ widget }: { widget: Widget }) {
 }
 
 function ActionWidget({ widget }: { widget: Widget }) {
-  const { actions } = widget.data;
-  console.log('ActionWidget actions:', actions);
+  const data = widget.data as ActionData;
+  const { actions } = data;
   
   if (!actions || actions.length === 0) return null;
 

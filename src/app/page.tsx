@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { ChatProvider } from "@/components/providers";
 
 export default function Home() {

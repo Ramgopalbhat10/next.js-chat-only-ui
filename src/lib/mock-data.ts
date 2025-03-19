@@ -17,7 +17,34 @@ export interface Tool {
 export interface Widget {
   type: 'card' | 'list' | 'table' | 'action';
   title?: string;
-  data: any;
+  data: CardData | ListData | TableData | ActionData;
+}
+
+// Data type definitions for widget types
+export interface CardData {
+  [key: string]: unknown;
+}
+
+export interface ListData extends Array<{
+  [key: string]: unknown;
+}> {
+  // Added a dummy property to fix the empty interface declaration issue
+  dummy?: never;
+}
+
+export interface TableData {
+  headers?: string[];
+  rows: Array<{
+    [key: string]: unknown;
+  }>;
+}
+
+export interface ActionData {
+  actions: Array<{
+    label: string;
+    value: string;
+    [key: string]: unknown;
+  }>;
 }
 
 // Static timestamp to prevent hydration issues
@@ -175,29 +202,32 @@ export const MOCK_MESSAGES: Message[] = [
       {
         type: 'table',
         title: 'Open Jira Tickets',
-        data: [
-          {
-            key: 'PROJ-123',
-            summary: 'Fix login page redirect issue',
-            priority: 'High',
-            assignee: 'You',
-            status: 'In Progress',
-          },
-          {
-            key: 'PROJ-145',
-            summary: 'Update documentation for new API',
-            priority: 'Medium',
-            assignee: 'You',
-            status: 'To Do',
-          },
-          {
-            key: 'PROJ-167',
-            summary: 'Investigate performance issue in dashboard',
-            priority: 'High',
-            assignee: 'Jane Smith',
-            status: 'In Progress',
-          },
-        ],
+        data: {
+          headers: ['Key', 'Summary', 'Priority', 'Assignee', 'Status'],
+          rows: [
+            {
+              key: 'PROJ-123',
+              summary: 'Fix login page redirect issue',
+              priority: 'High',
+              assignee: 'You',
+              status: 'In Progress',
+            },
+            {
+              key: 'PROJ-145',
+              summary: 'Update documentation for new API',
+              priority: 'Medium',
+              assignee: 'You',
+              status: 'To Do',
+            },
+            {
+              key: 'PROJ-167',
+              summary: 'Investigate performance issue in dashboard',
+              priority: 'High',
+              assignee: 'Jane Smith',
+              status: 'In Progress',
+            },
+          ],
+        },
       },
       {
         type: 'action',

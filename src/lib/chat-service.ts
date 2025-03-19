@@ -1,6 +1,6 @@
 'use client';
 
-import { Message, MOCK_GITHUB_REPOS, MOCK_JIRA_TICKETS, MOCK_SLACK_CHANNELS, MOCK_WORKDAY_TIMEOFF, Tool, Widget } from './mock-data';
+import { Message, MOCK_GITHUB_REPOS, MOCK_JIRA_TICKETS, MOCK_SLACK_CHANNELS, MOCK_WORKDAY_TIMEOFF, Widget } from './mock-data';
 
 // Simulate a backend response with a delay
 const simulateBackendResponse = async (
